@@ -31,6 +31,10 @@ func L(_ key: String, _ arguments: CVarArg...) -> String {
 }
 
 private let english: [String: String] = [
+    // パネルの下段
+    "設定…": "Settings…",
+    "アップデートを確認": "Check for Updates",
+    "%@ を終了": "Quit %@",
     "tsubomi のアプリ": "tsubomi apps",
     "アプリを選ぶ": "Choose an app",
     "%@ を起動して開く": "Open %@",
@@ -62,6 +66,9 @@ private let english: [String: String] = [
 ]
 
 private let chinese: [String: String] = [
+    "設定…": "设置…",
+    "アップデートを確認": "检查更新",
+    "%@ を終了": "退出 %@",
     "tsubomi のアプリ": "tsubomi 应用",
     "アプリを選ぶ": "选择应用",
     "%@ を起動して開く": "打开 %@",
@@ -90,3 +97,10 @@ private let chinese: [String: String] = [
     "入っていません": "未安装",
     "tsubomi のほかのアプリも、このアプリと同じ作りで、メニューバーにまとめられます。": "其他 tsubomi 应用采用相同设计，可与本应用共用菜单栏。",
 ]
+
+/// パネルの下段の文言（アプリの訳の表ではなく、tsubomi-kit の表から引く）。
+enum TsubomiText {
+    static var settings: String { L("設定…") }
+    static var checkForUpdates: String { L("アップデートを確認") }
+    static func quit(_ app: String) -> String { L("%@ を終了", app) }
+}
