@@ -30,15 +30,13 @@ targets.append(
     .target(
         name: "TsubomiMenuBar",
         dependencies: ["TsubomiKitCore"],
-        path: "Sources/TsubomiMenuBar",
-        resources: [.process("Resources")]
+        path: "Sources/TsubomiMenuBar"
     )
 )
 #endif
 
 let package = Package(
     name: "tsubomi-kit",
-    defaultLocalization: "ja",
     platforms: [
         .macOS(.v13)
     ],
