@@ -26,32 +26,50 @@ struct PanelRoot<Content: View>: View {
     let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if coordinator.role.isMerged {
-                SwitcherStrip(
-                    items: coordinator.switcherItems,
-                    current: coordinator.me.bundleID,
-                    select: { actions.switchHandler?($0) }
-                )
+        TsubomiPanelChrome {
+            VStack(alignment: .leading, spacing: 10) {
+                if coordinator.role.isMerged {
+                    SwitcherStrip(
+                        items: coordinator.switcherItems,
+                        current: coordinator.me.bundleID,
+                        select: { actions.switchHandler?($0) }
+                    )
+                }
+                if coordinator.asksToMerge {
+                    MergePrompt(
+                        otherNames: coordinator.roster.mergeCandidates
+                            .filter { $0.bundleID != coordinator.me.bundleID }
+                            .map(\.name),
+                        answer: { coordinator.setPreference($0) }
+                    )
+                }
+                content
             }
-            if coordinator.asksToMerge {
-                MergePrompt(
-                    otherNames: coordinator.roster.mergeCandidates
-                        .filter { $0.bundleID != coordinator.me.bundleID }
-                        .map(\.name),
-                    answer: { coordinator.setPreference($0) }
-                )
-            }
-            content
         }
-        .padding(PanelMetrics.padding)
-        .frame(width: PanelMetrics.width)
-        .background(PanelGlassBackground())
-        .clipShape(RoundedRectangle(cornerRadius: PanelMetrics.cornerRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: PanelMetrics.cornerRadius, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        )
+    }
+}
+
+/// パネルの外側：ガラスの背景・角丸 26・幅 320・余白 12。
+///
+/// TsubomiMenuBar のパネルはこれで包まれる。撮影モードなど、メニューバーを通さずに
+/// パネルの中身だけを窓に出すときも、これで包めば同じ見た目になる。
+public struct TsubomiPanelChrome<Content: View>: View {
+    private let content: Content
+
+    public init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    public var body: some View {
+        content
+            .padding(PanelMetrics.padding)
+            .frame(width: PanelMetrics.width)
+            .background(PanelGlassBackground())
+            .clipShape(RoundedRectangle(cornerRadius: PanelMetrics.cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: PanelMetrics.cornerRadius, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+            )
     }
 }
 
