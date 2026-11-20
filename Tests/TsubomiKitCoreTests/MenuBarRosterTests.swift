@@ -121,4 +121,32 @@ final class MenuBarRosterTests: XCTestCase {
         XCTAssertNotNil(roster.others[pacer.bundleID])
         XCTAssertFalse(roster.prune(isAlive: { _ in true }))
     }
+
+    func testExcludedAppsKeepTheirOwnIconWhileTheRestShareTheFlower() {
+        // 3 つのうち、Pacer だけ 🌸 から外す。
+        var inPacer = MenuBarRoster(me: pacer)
+        inPacer.upsert(profilink)
+        inPacer.upsert(touch)
+        inPacer.excluded = ["com.tiast.Pacer"]
+        XCTAssertEqual(inPacer.role(preference: .merged), .ownIcon)
+        XCTAssertFalse(inPacer.shouldAskToMerge(preference: .undecided))
+
+        var inTouch = MenuBarRoster(me: touch)
+        inTouch.upsert(profilink)
+        inTouch.upsert(pacer)
+        inTouch.excluded = ["com.tiast.Pacer"]
+        guard case let .flowerHost(members) = inTouch.role(preference: .merged) else {
+            return XCTFail("TouchRotator should still host the flower")
+        }
+        XCTAssertEqual(members.map(\.name), ["Profilink", "TouchRotator"])
+    }
+
+    func testFlowerGoesAwayWhenOnlyOneAppIsLeftInIt() {
+        var roster = MenuBarRoster(me: profilink)
+        roster.upsert(touch)
+        roster.excluded = ["com.tiast.TouchRotator"]
+        XCTAssertEqual(roster.role(preference: .merged), .ownIcon)
+        roster.excluded = []
+        XCTAssertTrue(roster.role(preference: .merged).isMerged)
+    }
 }

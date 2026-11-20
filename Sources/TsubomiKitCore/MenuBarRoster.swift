@@ -44,6 +44,9 @@ public struct MenuBarRoster: Equatable, Sendable {
     public private(set) var me: MenuBarMember
     /// 自分以外の、起動中のアプリ（バンドル ID ごとに 1 つ）。
     public private(set) var others: [String: MenuBarMember] = [:]
+    /// 🌸 に入れないアプリ（設定 › tsubomi で外したもの。バンドル ID）。
+    /// 外したアプリは、まとめているあいだも自分のアイコンを出す。
+    public var excluded: Set<String> = []
 
     public init(me: MenuBarMember) {
         self.me = me
@@ -94,12 +97,17 @@ public struct MenuBarRoster: Equatable, Sendable {
     /// まとめる相手にできるアプリ（自分を含む）。先に起動した順。
     public var mergeCandidates: [MenuBarMember] {
         let all = [me] + Array(others.values)
-        return all.filter(\.canMerge).sorted(by: Self.hostOrder)
+        return all.filter(joinsFlower).sorted(by: Self.hostOrder)
     }
 
     /// まとめられる相手がいるか（自分を含めて 2 つ以上）。
     public var hasMergePartners: Bool {
-        me.canMerge && mergeCandidates.count >= 2
+        joinsFlower(me) && mergeCandidates.count >= 2
+    }
+
+    /// 🌸 に入るアプリか（まとめられる版で、アイコンを出していて、外されていない）。
+    public func joinsFlower(_ member: MenuBarMember) -> Bool {
+        member.canMerge && !excluded.contains(member.bundleID)
     }
 
     /// まとめるか一度だけ聞く場面か。

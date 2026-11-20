@@ -27,6 +27,8 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
     @Published public private(set) var asksToMerge = false
     /// これまでに起動したことのある tsubomi のアプリ（自分を含む）。
     @Published public private(set) var knownApps: [KnownApp] = []
+    /// 🌸 に入れないアプリ（バンドル ID）。全アプリで共通。
+    @Published public private(set) var excludedApps: Set<String> = []
 
     weak var delegate: MenuBarCoordinatorDelegate?
 
@@ -35,6 +37,8 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
     private let defaults: UserDefaults
     private let center = DistributedNotificationCenter.default()
     private var observers: [NSObjectProtocol] = []
+    /// アプリの「メニューバーにアイコンを表示」の設定。
+    private var iconVisible = true
     /// 起動していないアプリを切り替えから起動したとき、名乗ってきたらパネルを出してもらう。
     private var pendingShow: (bundleID: String, anchor: MenuBarRect, until: Date)?
 
@@ -42,6 +46,7 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
         static let merge = "menuBarMerge"
         static let lastOpened = "menuBarLastOpenedApp"
         static let knownApps = "menuBarKnownApps"
+        static let excluded = "menuBarExcludedApps"
     }
 
     init(appName: String) {
@@ -57,7 +62,10 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
         defaults = UserDefaults(suiteName: MenuBarProtocol.sharedDefaultsSuite) ?? .standard
         preference = Self.readPreference(defaults)
         knownApps = Self.readKnownApps(defaults)
+        excludedApps = Self.readExcluded(defaults)
+        roster.excluded = excludedApps
         remember(KnownApp(me))
+        updateAnnouncedIcon()
     }
 
     public var me: MenuBarMember { roster.me }
@@ -106,12 +114,26 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
 
     /// メニューバーにアイコンを出すか（アプリの設定）。隠しているときはまとめる仕組みにも参加しない。
     func setShowsIcon(_ shows: Bool) {
-        guard roster.me.showsIcon != shows else { return }
-        var me = roster.me
-        me.showsIcon = shows
-        roster.updateMe(me)
-        send(.announce, member: me)
+        iconVisible = shows
+        if updateAnnouncedIcon() {
+            send(.announce, member: me)
+        }
         recompute()
+    }
+
+    /// ほかのアプリに知らせる showsIcon（🌸 に入るか）を合わせ直す。変わったら true。
+    ///
+    /// 🌸 から外したアプリは、自分のアイコンは出したまま、ほかのアプリには「アイコンを
+    /// 出していない」と名乗る。そうすれば、外す仕組みを知らない前の版（Profilink 1.1.4・
+    /// TouchRotator 1.66.8）も、そのアプリを 🌸 に入れない。
+    @discardableResult
+    private func updateAnnouncedIcon() -> Bool {
+        let joins = iconVisible && !excludedApps.contains(roster.me.bundleID)
+        guard roster.me.showsIcon != joins else { return false }
+        var me = roster.me
+        me.showsIcon = joins
+        roster.updateMe(me)
+        return true
     }
 
     /// 自分のパネルが開いた／閉じた。
@@ -132,6 +154,31 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
         defaults.set(value.rawValue, forKey: Key.merge)
         preference = value
         send(.preferencesChanged)
+        recompute()
+    }
+
+    /// `bundleID` のアプリを 🌸 に入れる／外す。すべての tsubomi のアプリに伝わる。
+    public func setIncluded(_ included: Bool, bundleID: String) {
+        var set = Self.readExcluded(defaults)
+        if included { set.remove(bundleID) } else { set.insert(bundleID) }
+        defaults.set(Array(set).sorted(), forKey: Key.excluded)
+        applyExcluded(set)
+        send(.preferencesChanged)
+    }
+
+    /// `bundleID` のアプリが起動中か（自分を含む）。
+    public func isRunning(_ bundleID: String) -> Bool {
+        bundleID == me.bundleID || roster.others[bundleID] != nil
+            || !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty
+    }
+
+    private func applyExcluded(_ set: Set<String>) {
+        guard set != excludedApps else { return }
+        excludedApps = set
+        roster.excluded = set
+        if updateAnnouncedIcon() {
+            send(.announce, member: me)
+        }
         recompute()
     }
 
@@ -180,6 +227,7 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
         var items = running.map { SwitcherItem(bundleID: $0.bundleID, name: $0.name, appPath: $0.appPath, isRunning: true) }
         for app in knownApps where !runningIDs.contains(app.bundleID)
             && roster.others[app.bundleID] == nil
+            && !excludedApps.contains(app.bundleID)
             && FileManager.default.fileExists(atPath: app.appPath) {
             items.append(SwitcherItem(bundleID: app.bundleID, name: app.name, appPath: app.appPath, isRunning: false))
         }
@@ -230,6 +278,7 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
                 preference = value
                 recompute()
             }
+            applyExcluded(Self.readExcluded(defaults))
         }
     }
 
@@ -279,6 +328,10 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
 
     private static func readPreference(_ defaults: UserDefaults) -> MergePreference {
         defaults.string(forKey: Key.merge).flatMap(MergePreference.init(rawValue:)) ?? .undecided
+    }
+
+    private static func readExcluded(_ defaults: UserDefaults) -> Set<String> {
+        Set(defaults.stringArray(forKey: Key.excluded) ?? [])
     }
 
     private static func readKnownApps(_ defaults: UserDefaults) -> [KnownApp] {

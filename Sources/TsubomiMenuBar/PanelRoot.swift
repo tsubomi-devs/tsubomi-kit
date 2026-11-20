@@ -83,7 +83,8 @@ struct SwitcherStrip: View {
         HStack(spacing: 4) {
             ForEach(items) { item in
                 SwitcherButton(item: item, isCurrent: item.bundleID == current) {
-                    select(item.bundleID)
+                    // いま開いているアプリを押しても何もしない。
+                    if item.bundleID != current { select(item.bundleID) }
                 }
             }
         }
@@ -126,9 +127,10 @@ private struct SwitcherButton: View {
             )
             .contentShape(Rectangle())
         }
+        // 押せなくする（disabled）と macOS が灰色に描き、いま開いているアプリのほうが
+        // 薄く見えてしまう。押しても何も起きないだけにして、見た目ははっきり残す。
         .buttonStyle(.plain)
-        .disabled(isCurrent)
-        .onHover { hovering = $0 }
+        .onHover { hovering = $0 && !isCurrent }
         .help(item.isRunning ? item.name : L("%@ を起動して開く", item.name))
         .accessibilityAddTraits(isCurrent ? .isSelected : [])
     }
@@ -152,7 +154,7 @@ struct MergePrompt: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(L("メニューバーのアイコンをまとめますか？"))
                         .font(.callout.weight(.semibold))
-                    Text(L("%@ も起動しています。tsubomi のアプリのアイコンを 1 つにまとめ、押したあとに上で切り替えられます。設定でいつでも戻せます。", otherNames.joined(separator: L("、"))))
+                    Text(L("%@ も起動しています。tsubomi のアプリのアイコンを 1 つにまとめ、押したあとに上で切り替えられます。設定 › tsubomi でいつでも変えられます。", otherNames.joined(separator: L("、"))))
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

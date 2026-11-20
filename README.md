@@ -27,6 +27,7 @@ TouchRotator ├─ Mac のアプリ間通知で「起動しています」と�
 - **追加のアプリは要りません。** どのアプリも同じ決め方で担当を選ぶので、相談しなくても 🌸 の担当は 1 つに決まります
 - **担当のアプリを終了すると**、残ったアプリが 🌸 を引き継ぎます。1 つだけになったら、そのアプリのアイコンに戻ります
 - **一度だけ聞きます。** tsubomi のアプリが 2 つ以上起動したら、パネルの上に「メニューバーのアイコンをまとめますか？」を出します。答えはすべての tsubomi のアプリで共通です（`~/Library/Preferences/works.tsubomi.shared.plist`）
+- **アプリごとに外せます。** 設定 › tsubomi で外したアプリは、まとめているあいだも自分のアイコンを出します。外したアプリはほかのアプリに「アイコンを出していない」と名乗るので、外す仕組みを知らない前の版とも食い違いません
 - **ライセンスには関係しません。** 各アプリは自分のライセンスを自分で確認し、パネルの中身も自分で描きます
 - **起動していないアプリ**も、一度起動したことがあれば切り替えに薄く出し、押すと起動してパネルを出します
 - アプリの設定でメニューバーのアイコンを隠しているアプリは、まとめる仕組みに参加しません
@@ -74,10 +75,22 @@ TouchRotator ├─ Mac のアプリ間通知で「起動しています」と�
    .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).strokeBorder(...))
    ```
 
-4. 設定 › 一般 に切り替えを置きます。
+4. 設定のサイドバーに「tsubomi」のページを足します（どのアプリでも同じ中身）。
 
    ```swift
-   TsubomiMergeToggle(coordinator: menuBar.coordinator)
+   // サイドバーの項目：名前は TsubomiSettingsPage.title、四角の色は TsubomiSettingsPage.tileColor、
+   // 絵は FlowerIcon.image（テンプレート画像。白で描く）
+   TsubomiSettingsPage(coordinator: menuBar.coordinator)
+   ```
+
+   ページの中身：
+   - **メニューバー** — 「1 つにまとめる／アプリごとに表示」（絵つきの 2 択）と、🌸 に入れるアプリ（外したアプリは単独でアイコンを出す）
+   - **tsubomi のアプリ** — 入っているアプリの版・起動中か・開く。入っていないアプリは販売ページへ（`TsubomiCatalog`。新しいアプリを出したらここに足す）
+
+5. 設定の窓に、サイドバーの開閉ボタンを消し続ける処理をかけます（SwiftUI があとから入れ直すため）。
+
+   ```swift
+   window.keepSidebarToggleAway()
    ```
 
 ## 開発
