@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    paths-ignore: ['**.md']
+  pull_request:
+  workflow_dispatch:
+
+# 同じブランチに新しい push が来たら、古い実行は止める。
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # UI を持たない部分（TsubomiKitCore）のテスト。Linux なので安い。
+  core-linux:
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: swift test
+
+  # メニューバーの部品（AppKit + SwiftUI）を含めたビルド。Profilink・TouchRotator と同じランナー。
+  # Mac のランナーは非公開リポジトリでは 10 倍で数えられるので、ビルドとテストだけにしている。
+  macos:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test

@@ -1,0 +1,10 @@
+"tsubomi のアプリ" = "tsubomi apps";
+"アプリを選ぶ" = "Choose an app";
+"%@ を起動して開く" = "Open %@";
+"メニューバーのアイコンをまとめますか？" = "Combine the menu bar icons?";
+"%@ も起動しています。tsubomi のアプリのアイコンを 1 つにまとめ、押したあとに上で切り替えられます。設定でいつでも戻せます。" = "%@ is also running. Show one icon for all tsubomi apps and switch between them at the top of the panel. You can change this in Settings at any time.";
+"、" = ", ";
+"別々のまま" = "Keep Separate";
+"まとめる" = "Combine";
+"tsubomi のアプリをメニューバーで 1 つにまとめる" = "Combine tsubomi apps into one menu bar icon";
+"tsubomi のアプリが 2 つ以上起動しているとき、メニューバーのアイコンを 🌸 1 つにします。機能はそれぞれのアプリのままです。" = "When two or more tsubomi apps are running, show a single 🌸 icon in the menu bar. Each app keeps all of its own features.";
