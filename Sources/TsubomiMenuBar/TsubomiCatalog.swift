@@ -64,5 +64,36 @@ public enum TsubomiCatalog {
             ),
             iconURL: URL(string: "https://touchrotator.tsubomi.jp/appicon.png")!
         ),
+        TsubomiCatalogApp(
+            bundleID: "com.tiast.Shotdrop",
+            name: "Shotdrop",
+            tagline: .init(
+                ja: "全画面・選択・スクロールして全体を、ショートカット 1 つで撮るスクリーンショット",
+                en: "Screenshots of the full screen, a selection or a whole scrolling page, each with one shortcut",
+                zh: "用一个快捷键截取全屏、选区或整个滚动页面"
+            ),
+            // 販売ページができるまでは、ダウンロードのページに案内する。
+            page: .init(
+                ja: "https://github.com/tsubomi-devs/shotdrop-releases/releases/latest",
+                en: "https://github.com/tsubomi-devs/shotdrop-releases/releases/latest",
+                zh: nil
+            ),
+            iconURL: URL(string: "https://github.com/tsubomi-devs/shotdrop-releases/releases/latest/download/appicon.png")!
+        ),
+        TsubomiCatalogApp(
+            bundleID: "com.tiast.Windowfit",
+            name: "Windowfit",
+            tagline: .init(
+                ja: "ショートカット 1 つで、ウィンドウを半分・4 分の 1・3 分の 1・最大化に並べる",
+                en: "One shortcut puts a window in a half, a quarter, a third or full screen",
+                zh: "用一个快捷键把窗口排成一半、四分之一、三分之一或最大化"
+            ),
+            page: .init(
+                ja: "https://github.com/tsubomi-devs/windowfit-releases/releases/latest",
+                en: "https://github.com/tsubomi-devs/windowfit-releases/releases/latest",
+                zh: nil
+            ),
+            iconURL: URL(string: "https://github.com/tsubomi-devs/windowfit-releases/releases/latest/download/appicon.png")!
+        ),
     ]
 }
