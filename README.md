@@ -40,7 +40,7 @@ TouchRotator ├─ Mac のアプリ間通知で「起動しています」と�
 
    ```swift
    dependencies: [
-       .package(url: "https://github.com/tsubomi-works/tsubomi-kit", branch: "main"),
+       .package(url: "https://github.com/tsubomi-devs/tsubomi-kit", branch: "main"),
    ],
    // アプリのターゲットの dependencies に
    .product(name: "TsubomiMenuBar", package: "tsubomi-kit"),
