@@ -11,6 +11,8 @@ protocol MenuBarCoordinatorDelegate: AnyObject {
     func coordinator(_ coordinator: TsubomiMenuBarCoordinator, showPanelBelow anchor: NSRect)
     /// ほかのアプリから、パネルを閉じるよう頼まれた。
     func coordinatorRequestsHide(_ coordinator: TsubomiMenuBarCoordinator)
+    /// ほかのアプリ（`bundleID`）がパネルを開いた。切り替えの引き継ぎが済んだ合図に使う。
+    func coordinator(_ coordinator: TsubomiMenuBarCoordinator, panelOpenedIn bundleID: String)
 }
 
 /// 起動中の tsubomi のアプリと知らせ合い、メニューバーでの役割を決める。
@@ -271,6 +273,7 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
             clickGuard.record(app: message.sender, isOpen: message.isOpen ?? false, at: message.sentAt)
             if message.isOpen == true {
                 defaults.set(message.sender, forKey: Key.lastOpened)
+                delegate?.coordinator(self, panelOpenedIn: message.sender)
             }
         case .preferencesChanged:
             let value = Self.readPreference(defaults)

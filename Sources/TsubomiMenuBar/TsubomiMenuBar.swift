@@ -56,6 +56,9 @@ public final class TsubomiMenuBar<Content: View>: NSObject {
     private var currentAnchor: NSRect = .zero
     /// 起動直後、ほかのアプリの名乗りを待つあいだ（まとめる設定なら、自分のアイコンを出さずに待つ）。
     private var isSettling: Bool
+    /// 切り替えで、パネルを引き継いでもらっている相手（相手のパネルが出るまで自分のパネルを残す）。
+    private var handoffTarget: String?
+    private var handoffFallback: Task<Void, Never>?
 
     /// - Parameters:
     ///   - appName: 画面に出すアプリの名前（切り替えに出る）。
@@ -143,9 +146,11 @@ public final class TsubomiMenuBar<Content: View>: NSObject {
     }
 
     public func hidePanel() {
+        endHandoff()
         guard popup.isVisible else { return }
         removeMonitors()
         popup.orderOut(nil)
+        popup.alphaValue = 1
         coordinator.panelDidChange(isOpen: false)
     }
 
@@ -180,19 +185,60 @@ public final class TsubomiMenuBar<Content: View>: NSObject {
         }
         popup.setFrame(NSRect(x: x, y: pinnedTop - size.height, width: size.width, height: size.height), display: true)
         let wasVisible = popup.isVisible
+        endHandoff()
+        popup.alphaValue = 1
         popup.makeKeyAndOrderFront(nil)
+        // 切り替えで呼ばれたとき、自分は前面のアプリではない。前のアプリのパネルの上に重ねて出す。
+        popup.orderFrontRegardless()
         installMonitors()
         if !wasVisible {
             coordinator.panelDidChange(isOpen: true)
         }
     }
 
-    /// 切り替えでほかのアプリが選ばれた。自分は閉じて、同じ位置に相手のパネルを出してもらう。
+    /// 切り替えでほかのアプリが選ばれた。同じ位置に相手のパネルを出してもらい、
+    /// 相手のパネルが出たら（panelState の知らせ）、自分のパネルを薄くしながら消す。
+    ///
+    /// 先に閉じてから頼むと、相手が出すまでのあいだ（別のアプリなので数十ミリ秒）
+    /// 何も出ていない時間ができ、パネルが一瞬消えて見える。重ねてから消せば、ぬるっと切り替わる。
+    /// 相手が前の版（この合図を待たない版）でも、相手は panelState を送るので同じように動く。
     private func switchTo(_ bundleID: String) {
         guard bundleID != coordinator.me.bundleID else { return }
         let anchor = currentAnchor
-        hidePanel()
+        let isRunning = coordinator.isRunning(bundleID)
+        endHandoff()
+        handoffTarget = bundleID
         coordinator.open(bundleID, below: anchor)
+        // 返事が来なければ閉じる（起動から待つときは長めに）。
+        let wait: UInt64 = isRunning ? 1_200_000_000 : 8_000_000_000
+        handoffFallback = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: wait)
+            guard !Task.isCancelled, let self, self.handoffTarget == bundleID else { return }
+            self.fadeOutAndHide()
+        }
+    }
+
+    private func endHandoff() {
+        handoffTarget = nil
+        handoffFallback?.cancel()
+        handoffFallback = nil
+    }
+
+    /// 引き継ぎ相手のパネルが出たあと、自分のパネルを薄くしながら消す。
+    private func fadeOutAndHide() {
+        endHandoff()
+        guard popup.isVisible else { return }
+        removeMonitors()
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.18
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            popup.animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            Task { @MainActor [weak self] in
+                guard let self, self.popup.alphaValue < 0.01 else { return }
+                self.hidePanel()
+            }
+        })
     }
 
     private func resizeToFit() {
@@ -281,6 +327,12 @@ extension TsubomiMenuBar: MenuBarCoordinatorDelegate {
 
     func coordinatorRequestsHide(_ coordinator: TsubomiMenuBarCoordinator) {
         hidePanel()
+    }
+
+    func coordinator(_ coordinator: TsubomiMenuBarCoordinator, panelOpenedIn bundleID: String) {
+        if handoffTarget == bundleID {
+            fadeOutAndHide()
+        }
     }
 }
 
