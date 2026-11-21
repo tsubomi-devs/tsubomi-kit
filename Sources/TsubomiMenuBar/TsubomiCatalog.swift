@@ -72,13 +72,12 @@ public enum TsubomiCatalog {
                 en: "Screenshots of the full screen, a selection or a whole scrolling page, each with one shortcut",
                 zh: "用一个快捷键截取全屏、选区或整个滚动页面"
             ),
-            // 販売ページができるまでは、ダウンロードのページに案内する。
             page: .init(
-                ja: "https://github.com/tsubomi-devs/shotdrop-releases/releases/latest",
-                en: "https://github.com/tsubomi-devs/shotdrop-releases/releases/latest",
+                ja: "https://shotdrop.tsubomi.jp/",
+                en: "https://shotdrop.tsubomi.jp/en/",
                 zh: nil
             ),
-            iconURL: URL(string: "https://github.com/tsubomi-devs/shotdrop-releases/releases/latest/download/appicon.png")!
+            iconURL: URL(string: "https://shotdrop.tsubomi.jp/appicon.png")!
         ),
         TsubomiCatalogApp(
             bundleID: "com.tiast.Windowfit",
@@ -89,11 +88,11 @@ public enum TsubomiCatalog {
                 zh: "用一个快捷键把窗口排成一半、四分之一、三分之一或最大化"
             ),
             page: .init(
-                ja: "https://github.com/tsubomi-devs/windowfit-releases/releases/latest",
-                en: "https://github.com/tsubomi-devs/windowfit-releases/releases/latest",
+                ja: "https://windowfit.tsubomi.jp/",
+                en: "https://windowfit.tsubomi.jp/en/",
                 zh: nil
             ),
-            iconURL: URL(string: "https://github.com/tsubomi-devs/windowfit-releases/releases/latest/download/appicon.png")!
+            iconURL: URL(string: "https://windowfit.tsubomi.jp/appicon.png")!
         ),
     ]
 }
