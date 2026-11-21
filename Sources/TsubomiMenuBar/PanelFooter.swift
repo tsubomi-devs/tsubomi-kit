@@ -33,8 +33,15 @@ public struct TsubomiPanelFooter<Extra: View>: View {
         self.extra = extra
     }
 
+    /// 「v1.2.3」。試し用のビルド（通し番号が「1.2.3.7」のように版より長い）は「v1.2.3 テスト版 7」。
+    /// 試し用か正式版かが、パネルを見ただけで分かるように。
     private var version: String {
-        "v" + (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
+        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? short
+        if build != short, build.hasPrefix(short + ".") {
+            return "v\(short) " + TsubomiText.testBuild(String(build.dropFirst(short.count + 1)))
+        }
+        return "v" + short
     }
 
     public var body: some View {
