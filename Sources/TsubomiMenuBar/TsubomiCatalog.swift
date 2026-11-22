@@ -94,5 +94,20 @@ public enum TsubomiCatalog {
             ),
             iconURL: URL(string: "https://windowfit.tsubomi.jp/appicon.png")!
         ),
+        TsubomiCatalogApp(
+            bundleID: "com.tiast.Cleanlock",
+            name: "Cleanlock",
+            tagline: .init(
+                ja: "キーボードやトラックパッドを拭くあいだ入力をロックし、画面を拭くときは真っ暗に",
+                en: "Locks the keyboard and trackpad while you clean them, and blacks out the screen while you wipe it",
+                zh: "擦拭键盘和触控板时锁定输入，擦拭屏幕时让屏幕全黑"
+            ),
+            page: .init(
+                ja: "https://cleanlock.tsubomi.jp/",
+                en: "https://cleanlock.tsubomi.jp/en/",
+                zh: nil
+            ),
+            iconURL: URL(string: "https://cleanlock.tsubomi.jp/appicon.png")!
+        ),
     ]
 }
