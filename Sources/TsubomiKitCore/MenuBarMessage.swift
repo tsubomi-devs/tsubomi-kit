@@ -20,6 +20,9 @@ public struct MenuBarMessage: Codable, Equatable, Sendable {
         case panelState
         /// 「共通の設定（まとめる／まとめない）が変わった」。受け取ったら設定を読み直す。
         case preferencesChanged
+        /// 「tsubomi のアプリは、アップデートがないか確かめてください」。どれかのパネルで ↓ を押したときに送る。
+        /// 受け取ったアプリは、ふだんの自動の確認と同じように確かめ、新しい版があるときだけ知らせる。
+        case checkForUpdates
     }
 
     public var kind: Kind

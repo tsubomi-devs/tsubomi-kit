@@ -34,6 +34,7 @@ private let english: [String: String] = [
     // パネルの下段
     "設定…": "Settings…",
     "アップデートを確認": "Check for Updates",
+    "アップデートを確認（tsubomi のアプリすべて）": "Check for Updates (all tsubomi apps)",
     "%@ を終了": "Quit %@",
     "テスト版 %@": "test build %@",
     "tsubomi のアプリ": "tsubomi apps",
@@ -69,6 +70,7 @@ private let english: [String: String] = [
 private let chinese: [String: String] = [
     "設定…": "设置…",
     "アップデートを確認": "检查更新",
+    "アップデートを確認（tsubomi のアプリすべて）": "检查更新（所有 tsubomi 应用）",
     "%@ を終了": "退出 %@",
     "テスト版 %@": "测试版 %@",
     "tsubomi のアプリ": "tsubomi 应用",
@@ -104,6 +106,8 @@ private let chinese: [String: String] = [
 enum TsubomiText {
     static var settings: String { L("設定…") }
     static var checkForUpdates: String { L("アップデートを確認") }
+    /// 下段の ↓。押すと、起動しているほかの tsubomi のアプリも確かめる。
+    static var checkAllForUpdates: String { L("アップデートを確認（tsubomi のアプリすべて）") }
     static func quit(_ app: String) -> String { L("%@ を終了", app) }
     static func testBuild(_ number: String) -> String { L("テスト版 %@", number) }
 }
