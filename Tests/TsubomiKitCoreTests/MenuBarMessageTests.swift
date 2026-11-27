@@ -26,6 +26,11 @@ final class MenuBarMessageTests: XCTestCase {
         XCTAssertNil(message.anchor)
     }
 
+    func testCheckForUpdatesIsReadBack() throws {
+        let text = #"{"kind":"checkForUpdates","sender":"com.tiast.Shotdrop","senderPID":9,"sentAt":6}"#
+        XCTAssertEqual(try XCTUnwrap(MenuBarMessage.decode(text)).kind, .checkForUpdates)
+    }
+
     func testUnknownKindsAndGarbageAreIgnored() {
         // 新しい版のアプリが送った、知らない種類の知らせ。
         XCTAssertNil(MenuBarMessage.decode(#"{"kind":"dance","sender":"x","senderPID":1,"sentAt":0}"#))

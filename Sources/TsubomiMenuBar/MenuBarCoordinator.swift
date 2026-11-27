@@ -34,6 +34,12 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
 
     weak var delegate: MenuBarCoordinatorDelegate?
 
+    /// いま動いているアプリの、この仕組み（パネルの下段の ↓ から、ほかのアプリにも確認を頼むのに使う）。
+    public private(set) static weak var current: TsubomiMenuBarCoordinator?
+    /// ほかの tsubomi のアプリから「アップデートを確かめて」と頼まれたとき。アプリが設定する
+    /// （`TsubomiMenuBar.checkForUpdatesInBackground`）。nil なら何もしない。
+    public var onCheckForUpdates: (() -> Void)?
+
     private(set) var roster: MenuBarRoster
     private(set) var clickGuard = FlowerClickGuard()
     private let defaults: UserDefaults
@@ -75,6 +81,7 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
     // MARK: 開始・終了
 
     func start() {
+        Self.current = self
         observers.append(center.addObserver(
             forName: Notification.Name(MenuBarProtocol.notificationName),
             object: nil,
@@ -275,6 +282,8 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
                 defaults.set(message.sender, forKey: Key.lastOpened)
                 delegate?.coordinator(self, panelOpenedIn: message.sender)
             }
+        case .checkForUpdates:
+            onCheckForUpdates?()
         case .preferencesChanged:
             let value = Self.readPreference(defaults)
             if value != preference {
@@ -301,6 +310,11 @@ public final class TsubomiMenuBarCoordinator: ObservableObject {
     }
 
     // MARK: 送る
+
+    /// 起動しているほかの tsubomi のアプリにも、アップデートを確かめてもらう。
+    public func askOthersToCheckForUpdates() {
+        send(.checkForUpdates)
+    }
 
     private func send(
         _ kind: MenuBarMessage.Kind,

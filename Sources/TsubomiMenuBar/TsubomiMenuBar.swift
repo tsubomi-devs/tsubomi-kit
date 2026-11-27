@@ -41,6 +41,13 @@ public final class TsubomiMenuBar<Content: View>: NSObject {
     /// パネルを開く直前に呼ぶ（状態を読み直すなど）。
     public var willShowPanel: (() -> Void)?
 
+    /// ほかの tsubomi のアプリのパネルで ↓（アップデートを確認）が押されたとき、このアプリも確かめる。
+    /// 新しい版があるときだけ画面を出す確かめ方（Sparkle の `checkForUpdatesInBackground`）を渡す。
+    public var checkForUpdatesInBackground: (() -> Void)? {
+        get { coordinator.onCheckForUpdates }
+        set { coordinator.onCheckForUpdates = newValue }
+    }
+
     /// 撮影モードなどで、パネルの窓そのものが要るとき用。
     public var panel: NSPanel { popup }
 

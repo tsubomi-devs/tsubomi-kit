@@ -63,7 +63,11 @@ public struct TsubomiPanelFooter<Extra: View>: View {
 
             extra($hint)
             if let checkForUpdates {
-                TsubomiFooterButton(systemImage: "arrow.down.circle", title: TsubomiText.checkForUpdates, hint: $hint, action: checkForUpdates)
+                TsubomiFooterButton(systemImage: "arrow.down.circle", title: TsubomiText.checkAllForUpdates, hint: $hint) {
+                    // 自分を確かめ、起動しているほかの tsubomi のアプリにも確かめてもらう（まとめて確認）。
+                    checkForUpdates()
+                    TsubomiMenuBarCoordinator.current?.askOthersToCheckForUpdates()
+                }
             }
             TsubomiFooterButton(systemImage: "power", title: TsubomiText.quit(appName), hint: $hint) {
                 NSApp.terminate(nil)
